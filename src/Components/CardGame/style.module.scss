@@ -1,23 +1,58 @@
-.cardGame {
+.cardContainer {
+    position: relative;
     width: 150px;
-    height: 250px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 10px;
-    background-color: #d5d5d5;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s ease;
+    height: 200px;
+    perspective: 1000px; 
+}
 
-    &:hover {
-        transform: scale(1.05);
-    }
+.card {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+    cursor: pointer;
+}
 
-    img {
-        object-fit: cover;
-        max-width: 100%;
-        height: auto;
-        border-radius: 4px;
-    }
+.cardFront, .cardBack {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden; /* Hides the back face when facing away */
+}
+
+.cardFront {
+    background-size: cover;
+    background-position: center;
+    object-fit: cover;
+}
+
+.cardBack {
+    width: 100%;
+    height: 100%;
+    background: repeating-conic-gradient(
+          from 30deg,
+          #0000 0 120deg,
+          var(--c3) 0 180deg
+        )
+        calc(0.5 * var(--s)) calc(0.5 * var(--s) * 0.577),
+      repeating-conic-gradient(
+        from 30deg,
+        var(--c1) 0 60deg,
+        var(--c2) 0 120deg,
+        var(--c3) 0 180deg
+      );
+    background-size: var(--s) calc(var(--s) * 0.577);
+    // transform: rotateY(0deg); /* Default to showing the back */
+
+}
+.flipped {
+    transform: rotateY(180deg); /* Rotate the entire card */
+}
+.flipped .cardFront {
+    transform: rotateY(180deg); /* Show the front when flipped */
+}
+
+.flipped .cardBack {
+    transform: rotateY(360deg); /* Show the back when flipped */
 }

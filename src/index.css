@@ -9,6 +9,12 @@
     --grayColor: #faf9f9;
     --text-color: #645e5e;
     --darkGrayColor: #645656;
+   
+      --s: 200px;
+      --c1: #1d1d1d;
+      --c2: #4e4f51;
+      --c3: #3c3c3c;
+    
   }
 
 * {

@@ -1,14 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styles from './style.module.scss'
 import data from '../../data.json';
 import CardGame from '../cardGame'
+import ShuffleButton from '../ShuffleButton';
 
 export default function BoardGame() {
+    const [cards, setCards] = useState(data.cards10);
+
     return (
         <div className={styles.boardGame}>
             <h2>BoardGame</h2>
             <ul>
-                {data.cards10.map((card, index) => (
+                {cards.map((card, index) => (
                     <li key={index}>
                         <CardGame
                             image={card.image}
@@ -17,6 +20,7 @@ export default function BoardGame() {
                     </li>
                 ))}
             </ul>
+            <ShuffleButton setCards={setCards}/>
         </div>
     );
 }

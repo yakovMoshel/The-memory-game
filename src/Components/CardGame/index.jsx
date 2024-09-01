@@ -1,21 +1,18 @@
-import React, { useState } from 'react';
+import React from 'react';
 import styles from './style.module.scss';
 
-export default function CardGame({ image, value }) {
-    const [isFlipped, setIsFlipped] = useState(false);
-
+export default function CardGame({ image, value, isFlipped, handleChoice }) {
     const handleClick = () => {
-        setIsFlipped(!isFlipped);
+        if (!isFlipped) {
+            handleChoice();
+        }
     };
 
     return (
         <div className={styles.cardContainer} onClick={handleClick}>
             <div className={`${styles.card} ${isFlipped ? styles.flipped : ''}`}>
-                <img className={styles.cardFront}
-                  style={{ backgroundImage: `url(${image})` }} alt={value}>
-                </img>
-                <div className={styles.cardBack}>
-                </div>
+                <img className={styles.cardFront} src={image} alt={value} />
+                <div className={styles.cardBack}></div>
             </div>
         </div>
     );

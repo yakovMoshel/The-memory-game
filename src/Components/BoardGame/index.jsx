@@ -7,7 +7,7 @@ import shuffleCards from '../../functions/shuffel';
 import Popup from '../popUp';
 import Timer from '../Timer';
 
-export default function BoardGame({ onTurnChange }) {
+export default function BoardGame({ setActivePlayer }) {
     const [cards, setCards] = useState(cards10.map((card, index) => ({ ...card, id: index })));
 
     const [turns, setTurns] = useState(0);
@@ -41,9 +41,9 @@ export default function BoardGame({ onTurnChange }) {
     };
 
     useEffect(() => {
-        // Check if two cards have been selected
         if (choiceOne && choiceTwo) {
             if (choiceOne.value === choiceTwo.value) {
+                // Cards match
                 setCards(prevCards =>
                     prevCards.map(card =>
                         card.value === choiceOne.value
@@ -51,8 +51,13 @@ export default function BoardGame({ onTurnChange }) {
                             : card
                     )
                 );
+                
+                // Clear choices and increment turns
+                setChoiceOne(null);
+                setChoiceTwo(null);
+                setTurns(prevTurns => prevTurns + 1);
             } else {
-                // If they don't match, flip them back after a delay
+                // Cards don't match, flip them back after a delay
                 setTimeout(() => {
                     setFlippedCards(prevFlipped => {
                         const updated = { ...prevFlipped };
@@ -61,15 +66,16 @@ export default function BoardGame({ onTurnChange }) {
                         });
                         return updated;
                     });
-                }, 1000); // Delay before flipping back
+
+                    // Change turn after the delay
+                    setActivePlayer(prev => (prev === 'A' ? 'B' : 'A'));
+                    
+                    // Clear choices and increment turns
+                    setChoiceOne(null);
+                    setChoiceTwo(null);
+                    setTurns(prevTurns => prevTurns + 1);
+                }, 1000); // 1 second delay before flipping back
             }
-
-            setChoiceOne(null);
-            setChoiceTwo(null);
-            setTurns(prevTurns => prevTurns + 1);
-
-            // Switch turn after every two card selections
-            onTurnChange();
         }
     }, [choiceOne, choiceTwo]);
 
@@ -88,6 +94,12 @@ export default function BoardGame({ onTurnChange }) {
         setShowPopup(false);
         setTurns(0);
         shuffleCards(setCards);
+    };
+
+    const handleTurnChange = () => {
+        setTimeout(() => {
+            setActivePlayer(prev => !prev);
+        }, 2000); // 2 seconds delay
     };
 
     return (

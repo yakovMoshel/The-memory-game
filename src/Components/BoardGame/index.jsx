@@ -4,21 +4,20 @@ import { cards10 } from '../../data';
 import CardGame from '../cardGame';
 import ShuffleButton from '../ShuffleButton';
 import shuffleCards from '../../functions/shuffel';
+import Popup from '../popUp';
+import Timer from '../Timer';
 
-export default function BoardGame() {
-    // State to hold cards with unique IDs
+export default function BoardGame({ onTurnChange }) {
     const [cards, setCards] = useState(cards10.map((card, index) => ({ ...card, id: index })));
-    
-    // State to keep track of the number of turns
+
     const [turns, setTurns] = useState(0);
-    
-    
-    // State to keep track of selected cards
+
     const [choiceOne, setChoiceOne] = useState(null);
     const [choiceTwo, setChoiceTwo] = useState(null);
 
-    // State to manage which cards are flipped
     const [flippedCards, setFlippedCards] = useState({});
+
+    const [showPopup, setShowPopup] = useState(false);
 
     useEffect(() => {
         shuffleCards(setCards); // Shuffle cards when the component mounts
@@ -26,7 +25,6 @@ export default function BoardGame() {
 
     // Handle card selection
     const handleChoice = (card) => {
-        // Return if two cards are already selected
         if (choiceOne && choiceTwo) return;
 
         // Flip the selected card
@@ -35,7 +33,6 @@ export default function BoardGame() {
             [card.id]: true
         }));
 
-        // Manage card choices
         if (!choiceOne) {
             setChoiceOne(card);
         } else {
@@ -46,9 +43,7 @@ export default function BoardGame() {
     useEffect(() => {
         // Check if two cards have been selected
         if (choiceOne && choiceTwo) {
-            // Compare the selected cards
             if (choiceOne.value === choiceTwo.value) {
-                // If they match, mark them as matched
                 setCards(prevCards =>
                     prevCards.map(card =>
                         card.value === choiceOne.value
@@ -69,29 +64,50 @@ export default function BoardGame() {
                 }, 1000); // Delay before flipping back
             }
 
-            // Clear choices and increment turns
             setChoiceOne(null);
             setChoiceTwo(null);
             setTurns(prevTurns => prevTurns + 1);
+
+            // Switch turn after every two card selections
+            onTurnChange();
         }
     }, [choiceOne, choiceTwo]);
+
+    // Check if all cards are matched
+    useEffect(() => {
+        const allMatched = cards.every(card => card.isMatched);
+        if (allMatched) {
+            setShowPopup(true); // Show the popup if all cards are matched
+        }
+    }, [cards]);
+
+    // Start a new game by reshuffling the cards
+    const startNewGame = () => {
+        setCards(cards10.map((card, index) => ({ ...card, id: index, isMatched: false })));
+        setFlippedCards({});
+        setShowPopup(false);
+        setTurns(0);
+        shuffleCards(setCards);
+    };
 
     return (
         <div className={styles.boardGame}>
             <h2>BoardGame</h2>
+            <Timer />
             <ul>
                 {cards.map((card) => (
                     <li key={card.id}>
-                        <CardGame 
+                        <CardGame
                             image={card.image}
                             value={card.value}
-                            isFlipped={flippedCards[card.id] || false} // Card flip state
+                            isFlipped={flippedCards[card.id] || false}
                             handleChoice={() => handleChoice(card)}
                         />
                     </li>
                 ))}
             </ul>
             <ShuffleButton setCards={setCards} />
+            {showPopup && <Popup message="All cards matched! Start a new game?" onClose={startNewGame} />}
         </div>
     );
 }

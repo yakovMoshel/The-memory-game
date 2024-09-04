@@ -1,0 +1,11 @@
+.playersContainer {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+  }
+  
+  .activePlayer {
+    border: 2px solid #00f; 
+    padding: 5px;
+    border-radius: 5px;
+  }

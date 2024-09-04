@@ -3,7 +3,7 @@ import React from 'react'
 export default function Header() {
   return (
     <header>
-      <h3>Header</h3>
+      <h3>memory game</h3>
     </header>
   )
 }

@@ -6,6 +6,7 @@ export default function CardGame({ image, value, isFlipped, handleChoice }) {
         if (!isFlipped) {
             handleChoice();
         }
+        
     };
 
     return (

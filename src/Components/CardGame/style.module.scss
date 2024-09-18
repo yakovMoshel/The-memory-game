@@ -12,6 +12,8 @@
     transition: transform 0.6s;
     transform-style: preserve-3d;
     cursor: pointer;
+    box-shadow: 0 0 19px rgba(255, 255, 255, 0.967);
+
     transform: rotateY(180deg); /* Show the back by default */
 }
 
@@ -49,4 +51,13 @@
 
 .flipped {
     transform: rotateY(0deg); /* Rotate the entire card to show the front */
+}
+
+
+@media(max-width: 768px){
+    .cardContainer {
+        width: 90px;
+        height: 130px;
+        perspective: 800px;
+    }
 }

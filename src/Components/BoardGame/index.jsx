@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import styles from './style.module.scss';
 import { cards10 } from '../../data';
 import CardGame from '../cardGame';
@@ -6,120 +6,110 @@ import ShuffleButton from '../ShuffleButton';
 import shuffleCards from '../../functions/shuffel';
 import Popup from '../popUp';
 import Timer from '../Timer';
+import { GameContext } from '../../functions/GameContext';
 
-export default function BoardGame({ setActivePlayer }) {
-    const [cards, setCards] = useState(cards10.map((card, index) => ({ ...card, id: index })));
+export default function BoardGame({ playerA, playerB }) {
+  const {
+    activePlayer, setActivePlayer,
+    pointsA, setPointsA, pointsB, setPointsB,
+    choiceOne, setChoiceOne, choiceTwo, setChoiceTwo,
+    flippedCards, setFlippedCards, turns, setTurns
+  } = useContext(GameContext);
 
-    const [turns, setTurns] = useState(0);
+  const [cards, setCards] = useState(cards10.map((card, index) => ({ ...card, id: index })));
+  const [winner, setWinner] = useState('');
+  const [showPopup, setShowPopup] = useState(false);
 
-    const [choiceOne, setChoiceOne] = useState(null);
-    const [choiceTwo, setChoiceTwo] = useState(null);
+  useEffect(() => {
+    shuffleCards(setCards);
+  }, []);
 
-    const [flippedCards, setFlippedCards] = useState({});
+  const handleChoice = (card) => {
+    if (choiceOne && choiceTwo) return;
 
-    const [showPopup, setShowPopup] = useState(false);
+    setFlippedCards(prevFlipped => ({
+      ...prevFlipped,
+      [card.id]: true
+    }));
 
-    useEffect(() => {
-        shuffleCards(setCards); // Shuffle cards when the component mounts
-    }, []);
+    if (!choiceOne) {
+      setChoiceOne(card);
+    } else {
+      setChoiceTwo(card);
+    }
+  };
 
-    // Handle card selection
-    const handleChoice = (card) => {
-        if (choiceOne && choiceTwo) return;
+  useEffect(() => {
+    if (choiceOne && choiceTwo) {
+      if (choiceOne.value === choiceTwo.value) {
+        setCards(prevCards =>
+          prevCards.map(card =>
+            card.value === choiceOne.value
+              ? { ...card, isMatched: true }
+              : card
+          )
+        );
 
-        // Flip the selected card
-        setFlippedCards(prevFlipped => ({
-            ...prevFlipped,
-            [card.id]: true
-        }));
-
-        if (!choiceOne) {
-            setChoiceOne(card);
+        if (activePlayer === 'A') {
+          setPointsA(prev => prev + 1);
         } else {
-            setChoiceTwo(card);
+          setPointsB(prev => prev + 1);
         }
-    };
 
-    useEffect(() => {
-        if (choiceOne && choiceTwo) {
-            if (choiceOne.value === choiceTwo.value) {
-                // Cards match
-                setCards(prevCards =>
-                    prevCards.map(card =>
-                        card.value === choiceOne.value
-                            ? { ...card, isMatched: true }
-                            : card
-                    )
-                );
-                
-                // Clear choices and increment turns
-                setChoiceOne(null);
-                setChoiceTwo(null);
-                setTurns(prevTurns => prevTurns + 1);
-            } else {
-                // Cards don't match, flip them back after a delay
-                setTimeout(() => {
-                    setFlippedCards(prevFlipped => {
-                        const updated = { ...prevFlipped };
-                        [choiceOne.id, choiceTwo.id].forEach(id => {
-                            if (updated[id]) updated[id] = false;
-                        });
-                        return updated;
-                    });
-
-                    // Change turn after the delay
-                    setActivePlayer(prev => (prev === 'A' ? 'B' : 'A'));
-                    
-                    // Clear choices and increment turns
-                    setChoiceOne(null);
-                    setChoiceTwo(null);
-                    setTurns(prevTurns => prevTurns + 1);
-                }, 1000); // 1 second delay before flipping back
-            }
+        if (cards.every(card => card.isMatched || card.value === choiceOne.value)) {
+          const winner = pointsA > pointsB ? playerA : playerB;
+          setWinner(winner);
+          setShowPopup(true);
         }
-    }, [choiceOne, choiceTwo]);
-
-    // Check if all cards are matched
-    useEffect(() => {
-        const allMatched = cards.every(card => card.isMatched);
-        if (allMatched) {
-            setShowPopup(true); // Show the popup if all cards are matched
-        }
-    }, [cards]);
-
-    // Start a new game by reshuffling the cards
-    const startNewGame = () => {
-        setCards(cards10.map((card, index) => ({ ...card, id: index, isMatched: false })));
-        setFlippedCards({});
-        setShowPopup(false);
-        setTurns(0);
-        shuffleCards(setCards);
-    };
-
-    const handleTurnChange = () => {
+      } else {
         setTimeout(() => {
-            setActivePlayer(prev => !prev);
-        }, 2000); // 2 seconds delay
-    };
+          setFlippedCards(prevFlipped => {
+            const updated = { ...prevFlipped };
+            [choiceOne.id, choiceTwo.id].forEach(id => {
+              if (updated[id]) updated[id] = false;
+            });
+            return updated;
+          });
+          setActivePlayer(prev => prev === 'A' ? 'B' : 'A');
+        }, 1000);
+      }
 
-    return (
-        <div className={styles.boardGame}>
-            <h2>BoardGame</h2>
-            <Timer />
-            <ul>
-                {cards.map((card) => (
-                    <li key={card.id}>
-                        <CardGame
-                            image={card.image}
-                            value={card.value}
-                            isFlipped={flippedCards[card.id] || false}
-                            handleChoice={() => handleChoice(card)}
-                        />
-                    </li>
-                ))}
-            </ul>
-            <ShuffleButton setCards={setCards} />
-            {showPopup && <Popup message="All cards matched! Start a new game?" onClose={startNewGame} />}
-        </div>
-    );
+      setChoiceOne(null);
+      setChoiceTwo(null);
+      setTurns(prevTurns => prevTurns + 1);
+    }
+  }, [choiceOne, choiceTwo]);
+  const startNewGame = () => {
+    setCards(cards10.map((card, index) => ({ ...card, id: index, isMatched: false })));
+    setFlippedCards({});
+    setShowPopup(false);
+    setWinner('');
+    setPointsA(0);
+    setPointsB(0);
+    setTurns(0);
+    shuffleCards(setCards);
+};
+
+
+  return (
+    <div className={styles.boardGame}>
+      <h2>BoardGame</h2>
+      <Timer />
+      <ul>
+        {cards.map((card) => (
+          <li key={card.id}>
+            <CardGame
+              image={card.image}
+              value={card.value}
+              isFlipped={flippedCards[card.id] || false}
+              handleChoice={() => handleChoice(card)}
+            />
+          </li>
+        ))}
+      </ul>
+      
+      <ShuffleButton setCards={setCards} />
+      {showPopup && <Popup message="All cards matched! Start a new game?" winner={winner} onClose={startNewGame} />}
+    </div>
+  );
 }

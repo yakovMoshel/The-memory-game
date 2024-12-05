@@ -23,7 +23,7 @@ export default function FormPlayers() {
                 />
             </label>
 
-            <NavButton navTo={"/GamePage"}  state={{ playerA, playerB }} />
+            <NavButton navTo={"/GamePage"}  state={{ playerA, playerB }} massge="Start Game" />
         </div>
     )
 }

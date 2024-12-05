@@ -3,7 +3,7 @@ import styles from './style.module.scss'
 import { useNavigate } from 'react-router-dom';
 
 
-export default function NavButton({navTo, state}) {
+export default function NavButton({navTo, state,massge}) {
     const navigate = useNavigate();
 
     const handelNav = () => {
@@ -11,6 +11,6 @@ export default function NavButton({navTo, state}) {
     }
 
   return (
-    <button className={styles.NavButton} onClick={handelNav}>NavButton</button>
+    <button className={styles.NavButton} onClick={handelNav}>{massge}</button>
   )
 }
